@@ -12,7 +12,10 @@ mongoose
   })
   .catch(console.error);
 
+const routes = require("./routes/index");
+
 app.use(express.json());
+app.use(routes);
 app.use("/", indexRouter);
 app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
