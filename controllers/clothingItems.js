@@ -12,7 +12,13 @@ const createItem = (req, res) => {
       res.send({ data: item });
     })
     .catch((err) => {
-      res.status(500).send({ message: "Error from  createItem", err });
+      if (err.name === "CastError") {
+        return res.status(400).send("Invalid ID");
+      }
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(404).send("Document Not Found");
+      }
+      return res.status(500).send({ message: "Error from  createItem", err });
     });
 };
 
@@ -32,7 +38,13 @@ const updateItem = (req, res) => {
     .orFail()
     .then((item) => res.status(200).send({ data: item }))
     .catch((err) => {
-      res.status(500).send({ message: "Error from updateItem", err });
+      if (err.name === "CastError") {
+        return res.status(400).send("Invalid ID");
+      }
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(404).send("Document Not Found");
+      }
+      return res.status(500).send({ message: "Error from updateItem", err });
     });
 };
 
@@ -42,9 +54,15 @@ const deleteItem = (req, res) => {
   console.log(itemId);
   ClothingItem.findByIdAndDelete(itemId)
     .orFail()
-    .then((item) => res.status(204).send({}))
+    .then(() => res.status(204).send({}))
     .catch((err) => {
-      res.status(500).send({ message: "Error from deleteItem", err });
+      if (err.name === "CastError") {
+        return res.status(400).send("Invalid ID");
+      }
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(404).send("Document Not Found");
+      }
+      return res.status(500).send({ message: "Error from deleteItem", err });
     });
 };
 
