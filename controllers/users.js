@@ -1,12 +1,11 @@
 const User = require("../models/user");
-const 
 
 // Get / users;
 
 const getUsers = (req, res) => {
   User.find({})
     .then((users) => res.status(200).send(users))
-    .catch((err) => {
+    .catch(() => {
       console.error(500);
     });
 };
@@ -20,7 +19,7 @@ const createUser = (req, res) => {
       console.error(err);
 
       if (err.name === "ValidationError") {
-        return res.status(400).send("Validation Error");
+        return res.status(400).send({ message: "Validation Error" });
       }
       return res.status(500).send({ message: err.message });
     });
@@ -34,10 +33,10 @@ const getUser = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "CastError") {
-        return res.status(400).send("Cast Error");
+        return res.status(400).send({ message: "Cast Error" });
       }
       if (err.name === "DocumentNotFoundError") {
-        return res.status(404).send("Document Not Found");
+        return res.status(404).send({ message: "Document Not Found" });
       }
       return res.status(500).send({ message: err.message });
     });

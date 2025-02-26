@@ -1,6 +1,13 @@
-export const NOT_FOUND = 404;
-export const BAD_REQUEST = 400;
-export const SERVER_ERROR = 500;
-export const SUCESS = 200;
-export const CREATED 201;
-// any other error status you might need
+const NOT_FOUND = 404;
+const BAD_REQUEST = 400;
+const SERVER_ERROR = 500;
+const SUCCESS = 200;
+const CREATED = 201;
+
+module.exports = {
+  NOT_FOUND,
+  BAD_REQUEST,
+  SERVER_ERROR,
+  SUCCESS,
+  CREATED,
+};

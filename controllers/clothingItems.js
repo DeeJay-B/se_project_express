@@ -12,16 +12,12 @@ const createItem = (req, res) => {
       console.log(item);
       res.status(201).send({ data: item });
     })
-    .then((item) => {
-      console.log(item);
-      res.send({ data: item });
-    })
     .catch((err) => {
-      if (err.name === "CastError") {
-        return res.status(400).send("Invalid ID");
+      if (err.name === "ValidationError") {
+        return res.status(400).send({ message: "Invalid ID" });
       }
       if (err.name === "DocumentNotFoundError") {
-        return res.status(404).send("Document Not Found");
+        return res.status(404).send({ messgae: "Document Not Found" });
       }
       return res.status(500).send({ message: "Error from  createItem", err });
     });
@@ -59,30 +55,34 @@ const deleteItem = (req, res) => {
   console.log(itemId);
   ClothingItem.findByIdAndDelete(itemId)
     .orFail()
-    .then(() => res.status(200).send({}))
+    .then(() => res.status(200).send({ message: "Item deleted" }))
     .catch((err) => {
       if (err.name === "CastError") {
-        return res.status(400).send("Invalid ID");
+        return res.status(400).send({ message: "Invalid ID" });
       }
       if (err.name === "DocumentNotFoundError") {
-        return res.status(404).send("Document Not Found");
+        return res.status(404).send({ message: "Document Not Found" });
       }
-      return res.status(500).send({ message: "Error from deleteItem", err });
+      return res.status(500).send({ message: "Error from deleteItem" });
     });
 };
 
 const likeItem = (req, res) => {
   const { itemId } = req.params;
 
-  ClothingItem.findByIdAndUpdate(itemId, { $inc: { likes: 1 } })
+  ClothingItem.findByIdAndUpdate(
+    itemId,
+    { $addToSet: { likes: req.user._id } },
+    { new: true }
+  )
     .orFail()
     .then((item) => res.status(200).send({ data: item }))
     .catch((err) => {
       if (err.name === "CastError") {
-        return res.status(400).send("Invalid ID");
+        return res.status(400).send({ message: "Invalid ID" });
       }
       if (err.name === "DocumentNotFoundError") {
-        return res.status(404).send("Document Not Found");
+        return res.status(404).send({ message: "Document Not Found" });
       }
       return res.status(500).send({ message: "Error from likeItem", err });
     });
@@ -91,7 +91,11 @@ const likeItem = (req, res) => {
 const dislikeItem = (req, res) => {
   const { itemId } = req.params;
 
-  ClothingItem.findByIdAndUpdate(itemId, { $inc: { dislikes: 1 } })
+  ClothingItem.findByIdAndUpdate(
+    itemId,
+    { $pull: { likes: req.user._id } },
+    { new: true }
+  )
     .orFail()
     .then((item) => res.status(200).send({ data: item }))
     .catch((err) => {
