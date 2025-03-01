@@ -68,7 +68,7 @@ const deleteItem = (req, res) => {
     .then(() => res.status(SUCCESS).send({ message: "Item deleted" }))
     .catch((err) => {
       if (err.name === "CastError") {
-        return res.status().send({ message: "Invalid ID" });
+        return res.status(BAD_REQUEST).send({ message: "Bad Request" });
       }
       if (err.name === "DocumentNotFoundError") {
         return res.status(NOT_FOUND).send({ message: "Document Not Found" });
@@ -91,7 +91,7 @@ const likeItem = (req, res) => {
     .then((item) => res.status(SUCCESS).send({ data: item }))
     .catch((err) => {
       if (err.name === "CastError") {
-        return res.status(BAD_REQUEST).send({ message: "Invalid ID" });
+        return res.status(BAD_REQUEST).send({ message: "Bad Request" });
       }
       if (err.name === "DocumentNotFoundError") {
         return res.status(NOT_FOUND).send({ message: "Document Not Found" });
