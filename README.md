@@ -22,9 +22,9 @@ Error handling and validation
 
 API routes and controllers
 
-API Endpoints
+# API Endpoints
 
-Users
+## Users
 
 GET /users - Get all users
 
@@ -32,7 +32,7 @@ GET /users/:userId - Get a user by ID
 
 POST /users - Create a new user
 
-Clothing Items
+### Clothing Items
 
 GET /items - Get all items
 
@@ -40,13 +40,13 @@ POST /items - Create a new item
 
 DELETE /items/:itemId - Delete an item by ID
 
-Likes
+#### Likes
 
 PUT /items/:itemId/likes - Like an item
 
 DELETE /items/:itemId/likes - Unlike an item
 
-Error Handling
+##### Error Handling
 
 400 - Invalid data passed
 
