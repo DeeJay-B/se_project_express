@@ -5,7 +5,7 @@ const {
   SERVER_ERROR,
   SUCCESS,
   CREATED,
-} = require("../utils/constants");
+} = require("../utils/config");
 
 const createItem = (req, res) => {
   console.log(req);
