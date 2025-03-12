@@ -74,7 +74,7 @@ const login = (req, res) => {
       .send({ message: "Email and password are required" });
   }
 
-  User.findOne({
+  return User.findOne({
     email,
   })
     .select("+password")
@@ -98,6 +98,11 @@ const login = (req, res) => {
 
         return res.status(SUCCESS).send({ user, token });
       });
+    })
+    .catch((err) => {
+      // Place the catch block here
+      console.error(err);
+      return res.status(SERVER_ERROR).send({ message: "Server error" });
     });
 };
 
