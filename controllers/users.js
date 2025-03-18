@@ -12,19 +12,6 @@ const {
   UNAUTHORIZED,
 } = require("../utils/errors");
 
-// Get / users;
-
-const getUsers = (req, res) => {
-  User.find({})
-    .then((users) => res.status(SUCCESS).send(users))
-    .catch((err) => {
-      console.error(err);
-      return res
-        .status(SERVER_ERROR)
-        .send({ message: "An error has occurred on the server" });
-    });
-};
-
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
 
@@ -113,4 +100,24 @@ const updateCurrentUser = (req, res) => {
       return res.status(SERVER_ERROR).send({ message: "Error from update" });
     });
 };
-module.exports = { getUsers, createUser, updateCurrentUser, login };
+
+const getCurrentUser = (req, res) => {
+  const userId = req.user._id;
+
+  User.findById(userId)
+    .then((user) => {
+      if (!user) {
+        return res.status(NOT_FOUND).send({ message: "User not found" });
+      }
+      res.status(SUCCESS).send(user);
+    })
+    .catch((err) => {
+      if (err.name === "CastError") {
+        return res.status(BAD_REQUEST).send({ message: "Invalid ID" });
+      }
+      return res
+        .status(SERVER_ERROR)
+        .send({ message: "Error from getCurrent" });
+    });
+};
+module.exports = { createUser, updateCurrentUser, login, getCurrentUser };
