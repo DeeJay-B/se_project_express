@@ -5,12 +5,10 @@ const {
   SERVER_ERROR,
   SUCCESS,
   CREATED,
-} = require("../utils/config");
+  FORBIDDEN,
+} = require("../utils/errors");
 
 const createItem = (req, res) => {
-  console.log(req);
-  console.log(req.body);
-
   const owner = req.user._id;
   const { name, weather, imageUrl } = req.body;
 
@@ -23,8 +21,8 @@ const createItem = (req, res) => {
       if (err.name === "ValidationError") {
         return res.status(BAD_REQUEST).send({ message: "Invalid ID" });
       }
-      if (err.name === "DocumentNotFoundError") {
-        return res.status(NOT_FOUND).send({ messgae: "Document Not Found" });
+      if (err.name === "NOT_FOUND") {
+        return res.status(NOT_FOUND).send({ message: "Document Not Found" });
       }
       return res
         .status(SERVER_ERROR)
@@ -63,9 +61,18 @@ const deleteItem = (req, res) => {
   const { itemId } = req.params;
 
   console.log(itemId);
-  ClothingItem.findByIdAndDelete(itemId)
+  ClothingItem.findById(itemId)
     .orFail()
-    .then(() => res.status(SUCCESS).send({ message: "Item deleted" }))
+    .then((item) => {
+      if (String(item.owner) !== req.user._id) {
+        return res.status(FORBIDDEN).send({ message: "Forbidden" });
+      }
+      return item
+        .deleteOne()
+        .then(() =>
+          res.status(SUCCESS).send({ message: "Successfully deleted" })
+        );
+    })
     .catch((err) => {
       if (err.name === "CastError") {
         return res.status(BAD_REQUEST).send({ message: "Bad Request" });
@@ -112,7 +119,7 @@ const dislikeItem = (req, res) => {
     .then((item) => res.status(CREATED).send({ data: item }))
     .catch((err) => {
       if (err.name === "CastError") {
-        return res.status(BAD_REQUEST).send("Invalid ID");
+        return res.status(BAD_REQUEST).send({ message: "Invalid ID" });
       }
       if (err.name === "DocumentNotFoundError") {
         return res.status(NOT_FOUND).send("Document Not Found");

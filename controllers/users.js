@@ -8,7 +8,9 @@ const {
   SUCCESS,
   NOT_FOUND,
   CREATED,
-} = require("../utils/config");
+  CONFLICT,
+  UNAUTHORIZED,
+} = require("../utils/errors");
 
 // Get / users;
 
@@ -40,28 +42,9 @@ const createUser = (req, res) => {
         return res.status(BAD_REQUEST).send({ message: "Validation Error" });
       }
       if (err.code === 11000) {
-        return res
-          .status(BAD_REQUEST)
-          .send({ message: "Email already exists" });
+        return res.status(CONFLICT).send({ message: "Email already exists" });
       }
       return res.status(SERVER_ERROR).send({ message: "Error with Server" });
-    });
-};
-
-const getUser = (req, res) => {
-  const { userId } = req.params;
-  User.findById(userId)
-    .orFail()
-    .then((user) => res.status(SUCCESS).send(user))
-    .catch((err) => {
-      console.error(err);
-      if (err.name === "CastError") {
-        return res.status(BAD_REQUEST).send({ message: "Cast Error" });
-      }
-      if (err.name === "DocumentNotFoundError") {
-        return res.status(NOT_FOUND).send({ message: "Document Not Found" });
-      }
-      return res.status(SERVER_ERROR).send({ message: err.message });
     });
 };
 
@@ -81,14 +64,14 @@ const login = (req, res) => {
     .then((user) => {
       if (!user) {
         return res
-          .status(BAD_REQUEST)
+          .status(UNAUTHORIZED)
           .send({ message: "Invalid email or password" });
       }
 
       user.comparePassword(password, (err, isMatch) => {
         if (err || !isMatch) {
           return res
-            .status(BAD_REQUEST)
+            .status(UNAUTHORIZED)
             .send({ message: "Invalid email or password" });
         }
 
@@ -100,10 +83,34 @@ const login = (req, res) => {
       });
     })
     .catch((err) => {
-      // Place the catch block here
       console.error(err);
       return res.status(SERVER_ERROR).send({ message: "Server error" });
     });
 };
 
-module.exports = { getUsers, createUser, getUser, login };
+const updateCurrentUser = (req, res) => {
+  const { name, avatar } = req.body;
+  const userId = req.user._id;
+
+  User.findByIdAndUpdate(
+    userId,
+    { name, avatar },
+    { new: true, runValidators: true }
+  )
+    .then((user) => {
+      if (!user) {
+        return res.status(NOT_FOUND).send({ message: "User not found" });
+      }
+      res.status(SUCCESS).send(user);
+    })
+    .catch((err) => {
+      if (err.name === "ValidationError") {
+        return res.status(BAD_REQUEST).send({ message: "Validation Error" });
+      }
+      if (err.name === "CastError") {
+        return res.status(BAD_REQUEST).send({ message: "Invalid ID" });
+      }
+      return res.status(SERVER_ERROR).send({ message: "Error from update" });
+    });
+};
+module.exports = { getUsers, createUser, updateCurrentUser, login };
