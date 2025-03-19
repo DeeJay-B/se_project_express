@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 const { JWT_SECRET } = require("../utils/config");
 
 const User = require("../models/user");
@@ -14,13 +15,16 @@ const {
 
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
-
-  User.create({ name, avatar, email, password })
+  bcrypt
+    .hash(password, 10)
+    .then((hash) => {
+      return User.create({ name, avatar, email, password: hash });
+    })
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
-      res.status(CREATED).send({ user, token }); // Send both user and token
+      return res.status(CREATED).send({ user, token });
     })
     .catch((err) => {
       console.error(err);
@@ -55,8 +59,8 @@ const login = (req, res) => {
           .send({ message: "Invalid email or password" });
       }
 
-      user.comparePassword(password, (err, isMatch) => {
-        if (err || !isMatch) {
+      return bcrypt.compare(password, user.password).then((isMatch) => {
+        if (!isMatch) {
           return res
             .status(UNAUTHORIZED)
             .send({ message: "Invalid email or password" });
@@ -66,7 +70,7 @@ const login = (req, res) => {
           expiresIn: "7d",
         });
 
-        return res.status(SUCCESS).send({ user, token });
+        return res.status(SUCCESS).send({ token });
       });
     })
     .catch((err) => {
@@ -88,7 +92,7 @@ const updateCurrentUser = (req, res) => {
       if (!user) {
         return res.status(NOT_FOUND).send({ message: "User not found" });
       }
-      res.status(SUCCESS).send(user);
+      return res.status(SUCCESS).send(user);
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
@@ -109,7 +113,7 @@ const getCurrentUser = (req, res) => {
       if (!user) {
         return res.status(NOT_FOUND).send({ message: "User not found" });
       }
-      res.status(SUCCESS).send(user);
+      return res.status(SUCCESS).send(user);
     })
     .catch((err) => {
       if (err.name === "CastError") {
