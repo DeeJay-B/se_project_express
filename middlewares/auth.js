@@ -10,16 +10,15 @@ const auth = (req, res, next) => {
   }
 
   const token = authorization.replace("Bearer ", "");
-  let payload;
 
+  let payload;
   try {
     payload = jwt.verify(token, JWT_SECRET);
   } catch (err) {
     return res.status(UNAUTHORIZED).send({ message: "Invalid token" });
   }
 
-  req.user = payload;
-
+  req.user = payload; // now req.user._id will exist
   return next();
 };
 
